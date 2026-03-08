@@ -36,7 +36,7 @@ def to_oss_intent(api_request):
     elif api_request.intent_type == "deploy_config":
         return DeployConfigurationIntent(
             service_name=api_request.service_name,
-            change_scope=ChangeScope(api_request.change_scope),
+            change_scope=api_request.change_scope,  # directly pass string; ChangeScope is a Literal, not a class
             deployment_target=Environment(api_request.deployment_target),
             risk_level_hint=api_request.risk_level_hint,
             configuration=api_request.configuration,
