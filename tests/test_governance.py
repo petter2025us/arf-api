@@ -6,41 +6,43 @@ client = TestClient(app)
 
 def test_evaluate_provision_intent():
     payload = {
-        "intent_type": "ProvisionResourceIntent",
+        "intent_type": "provision_resource",
         "environment": "prod",
-        "resource_type": "DATABASE",
+        "resource_type": "database",
         "region": "eastus",
         "size": "Standard",
         "estimated_cost": 1200,
         "policy_violations": [],
         "requester": "alice",
-        "provenance": {}
+        "provenance": {},
+        "configuration": {}
     }
     response = client.post("/api/v1/intents/evaluate", json=payload)
-    assert response.status_code == 200
+    assert response.status_code == 200, response.text
     data = response.json()
     assert "risk_score" in data
 
 def test_evaluate_grant_access():
     payload = {
-        "intent_type": "GrantAccessIntent",
+        "intent_type": "grant_access",
         "environment": "dev",
         "principal": "bob",
-        "permission_level": "READ",
+        "permission_level": "read",
         "resource_scope": "/subscriptions/123",
         "estimated_cost": None,
         "policy_violations": [],
         "requester": "alice",
-        "provenance": {}
+        "provenance": {},
+        "justification": "test"
     }
     response = client.post("/api/v1/intents/evaluate", json=payload)
-    assert response.status_code == 200
+    assert response.status_code == 200, response.text
     data = response.json()
     assert "risk_score" in data
 
 def test_evaluate_deploy_config():
     payload = {
-        "intent_type": "DeployConfigurationIntent",
+        "intent_type": "deploy_config",
         "environment": "staging",
         "service_name": "payments-api",
         "change_scope": "canary",
@@ -48,10 +50,11 @@ def test_evaluate_deploy_config():
         "estimated_cost": 20,
         "policy_violations": [],
         "requester": "alice",
-        "provenance": {}
+        "provenance": {},
+        "configuration": {}
     }
     response = client.post("/api/v1/intents/evaluate", json=payload)
-    assert response.status_code == 200
+    assert response.status_code == 200, response.text
     data = response.json()
     assert "risk_score" in data
 
@@ -63,4 +66,4 @@ def test_invalid_intent_type():
         "provenance": {}
     }
     response = client.post("/api/v1/intents/evaluate", json=payload)
-    assert response.status_code == 422  # Unprocessable Entity (validation error)
+    assert response.status_code == 422

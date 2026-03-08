@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Literal, List, Any, Dict
 from enum import Enum
 
-# Re‑export enums from OSS for consistency (optional, but helps validation)
 from agentic_reliability_framework.core.governance.intents import (
     ResourceType,
     PermissionLevel,
@@ -10,56 +9,39 @@ from agentic_reliability_framework.core.governance.intents import (
     ChangeScope,
 )
 
-
-# -----------------------------------------------------------------------------
-# Base Intent Request
-# -----------------------------------------------------------------------------
 class BaseIntentRequest(BaseModel):
     environment: Environment
-    estimated_cost: Optional[float] = Field(None, ge=0, description="Estimated cost impact (if any)")
-    policy_violations: List[str] = Field(default_factory=list, description="List of policy violations already known")
-    requester: str = Field(..., description="User or service principal requesting the action")
-    provenance: Dict[str, Any] = Field(default_factory=dict, description="Metadata about the request origin")
+    estimated_cost: Optional[float] = Field(None, ge=0)
+    policy_violations: List[str] = Field(default_factory=list)
+    requester: str = Field(...)
+    provenance: Dict[str, Any] = Field(default_factory=dict)
 
-
-# -----------------------------------------------------------------------------
-# ProvisionResourceIntent Request
-# -----------------------------------------------------------------------------
 class ProvisionResourceRequest(BaseIntentRequest):
-    intent_type: Literal["ProvisionResourceIntent"] = "ProvisionResourceIntent"
+    intent_type: Literal["provision_resource"] = "provision_resource"
     resource_type: ResourceType
     region: str
     size: str
     configuration: Dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("region")
-    def validate_region(cls, v: str) -> str:
-        # Optional: add validation logic if needed; OSS already validates internally
+    def validate_region(cls, v):
         return v
 
-
-# -----------------------------------------------------------------------------
-# GrantAccessIntent Request
-# -----------------------------------------------------------------------------
 class GrantAccessRequest(BaseIntentRequest):
-    intent_type: Literal["GrantAccessIntent"] = "GrantAccessIntent"
+    intent_type: Literal["grant_access"] = "grant_access"
     principal: str
     permission_level: PermissionLevel
     resource_scope: str
     justification: Optional[str] = None
 
     @field_validator("resource_scope")
-    def validate_resource_scope(cls, v: str) -> str:
+    def validate_resource_scope(cls, v):
         if not v.startswith("/"):
             raise ValueError("Resource scope must start with '/'")
         return v
 
-
-# -----------------------------------------------------------------------------
-# DeployConfigurationIntent Request
-# -----------------------------------------------------------------------------
 class DeployConfigurationRequest(BaseIntentRequest):
-    intent_type: Literal["DeployConfigurationIntent"] = "DeployConfigurationIntent"
+    intent_type: Literal["deploy_config"] = "deploy_config"
     service_name: str
     change_scope: ChangeScope
     deployment_target: Environment
@@ -67,13 +49,9 @@ class DeployConfigurationRequest(BaseIntentRequest):
     configuration: Dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("service_name")
-    def validate_service_name(cls, v: str) -> str:
+    def validate_service_name(cls, v):
         if len(v) < 3:
             raise ValueError("Service name must be at least 3 characters")
         return v
 
-
-# -----------------------------------------------------------------------------
-# Union type for all intent requests (for parsing)
-# -----------------------------------------------------------------------------
 InfrastructureIntentRequest = ProvisionResourceRequest | GrantAccessRequest | DeployConfigurationRequest
