@@ -4,3 +4,6 @@ pydantic==2.12.5
 agentic-reliability-framework @ git+https://github.com/petter2025us/agentic-reliability-framework@main
 pytest==9.0.2
 httpx==0.28.1
+alembic
+pydantic-settings
+sqlalchemy
