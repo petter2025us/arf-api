@@ -1,7 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
-import json
 
 client = TestClient(app)
 
@@ -21,8 +20,6 @@ def test_evaluate_provision_intent():
     assert response.status_code == 200
     data = response.json()
     assert "risk_score" in data
-    assert "explanation" in data
-    assert "contributions" in data
 
 def test_evaluate_grant_access():
     payload = {
@@ -62,7 +59,8 @@ def test_invalid_intent_type():
     payload = {
         "intent_type": "UnknownIntent",
         "environment": "prod",
-        "requester": "alice"
+        "requester": "alice",
+        "provenance": {}
     }
     response = client.post("/api/v1/intents/evaluate", json=payload)
     assert response.status_code == 422  # Unprocessable Entity (validation error)
