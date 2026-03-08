@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from app.models.infrastructure_intents import InfrastructureIntentRequest
 from app.services.intent_adapter import to_oss_intent
 from app.services.risk_service import evaluate_intent
-from app.services.outcome_service import record_outcome
 from pydantic import BaseModel
 
 router = APIRouter()
