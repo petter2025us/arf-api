@@ -4,8 +4,6 @@ from agentic_reliability_framework.core.governance.intents import (
     DeployConfigurationIntent,
     ResourceType,
     PermissionLevel,
-    Environment,
-    ChangeScope,
 )
 from app.models.infrastructure_intents import (
     ProvisionResourceRequest,
@@ -13,23 +11,18 @@ from app.models.infrastructure_intents import (
     DeployConfigurationRequest,
 )
 
-
 def to_oss_intent(api_request):
-    """
-    Convert an API request model into the corresponding OSS intent object.
-    """
-    if api_request.intent_type == "ProvisionResourceIntent":
+    if api_request.intent_type == "provision_resource":
         return ProvisionResourceIntent(
             resource_type=ResourceType(api_request.resource_type),
             region=api_request.region,
             size=api_request.size,
             configuration=api_request.configuration,
-            environment=Environment(api_request.environment),
+            environment=api_request.environment,
             requester=api_request.requester,
             provenance=api_request.provenance,
-            # OSS intent also expects `intent_id` and `timestamp`, which are auto‑generated.
         )
-    elif api_request.intent_type == "GrantAccessIntent":
+    elif api_request.intent_type == "grant_access":
         return GrantAccessIntent(
             principal=api_request.principal,
             permission_level=PermissionLevel(api_request.permission_level),
@@ -38,11 +31,11 @@ def to_oss_intent(api_request):
             requester=api_request.requester,
             provenance=api_request.provenance,
         )
-    elif api_request.intent_type == "DeployConfigurationIntent":
+    elif api_request.intent_type == "deploy_config":
         return DeployConfigurationIntent(
             service_name=api_request.service_name,
-            change_scope=ChangeScope(api_request.change_scope),
-            deployment_target=Environment(api_request.deployment_target),
+            change_scope=api_request.change_scope,
+            deployment_target=api_request.deployment_target,
             risk_level_hint=api_request.risk_level_hint,
             configuration=api_request.configuration,
             requester=api_request.requester,

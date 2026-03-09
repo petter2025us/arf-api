@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from app.database.base import Base
+from app.database import models_intents
 from app.core.config import settings
 
 config = context.config
