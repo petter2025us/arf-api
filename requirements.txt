@@ -7,3 +7,4 @@ httpx==0.28.1
 alembic
 pydantic-settings
 sqlalchemy
+psycopg2-binary==2.9.10

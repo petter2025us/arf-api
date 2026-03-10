@@ -27,15 +27,25 @@ def reconstruct_oss_intent_from_json(oss_json: Dict[str, Any]) -> Infrastructure
     else:
         raise ValueError(f"Cannot reconstruct intent from JSON: missing or unknown intent_type {intent_type}")
 
-def dummy_intent_for_category(category: str) -> InfrastructureIntent:
-    from agentic_reliability_framework.core.governance.intents import ProvisionResourceIntent, Environment
-    return ProvisionResourceIntent(
-        resource_type="VM",
-        region="dummy",
-        size="dummy",
-        environment="dev",
-        requester="system"
+def _create_dummy_intent(intent_type: str) -> Optional[InfrastructureIntent]:
+    """Create a valid dummy intent for a given intent type.
+    For now, only ProvisionResourceIntent is fully supported.
+    """
+    from agentic_reliability_framework.core.governance.intents import (
+        ProvisionResourceIntent,
     )
+    if intent_type == "ProvisionResourceIntent":
+        # Use string values directly; they must be valid according to the model
+        return ProvisionResourceIntent(
+            resource_type="vm",
+            region="eastus",
+            size="Standard_D2s_v3",
+            environment="dev",          # Use string instead of Environment.dev
+            requester="system"
+        )
+    else:
+        logger.warning("Dummy intent creation not implemented for %s", intent_type)
+        return None
 
 def record_outcome(
     db: Session,
@@ -60,19 +70,30 @@ def record_outcome(
         success=bool(success),
         recorded_by=recorded_by,
         notes=notes,
-        recorded_at=datetime.datetime.utcnow()
+        recorded_at=datetime.datetime.utcnow()  # will be replaced with timezone-aware later
     )
     db.add(outcome)
     db.commit()
     db.refresh(outcome)
 
-    try:
-        if intent.oss_payload:
+    # Determine OSS intent for risk engine update
+    oss_intent = None
+    if intent.oss_payload:
+        try:
             oss_intent = reconstruct_oss_intent_from_json(intent.oss_payload)
-        else:
-            oss_intent = dummy_intent_for_category(intent.environment or "default")
-        risk_engine.update_outcome(oss_intent, success)
-    except Exception as e:
-        logger.exception("Failed to update RiskEngine after recording outcome for intent %s: %s", deterministic_id, e)
+        except Exception as e:
+            logger.warning("Failed to reconstruct OSS intent for %s: %s. Using dummy fallback.", deterministic_id, e)
+            oss_intent = _create_dummy_intent(intent.intent_type)
+    else:
+        oss_intent = _create_dummy_intent(intent.intent_type)
+
+    # Update risk engine if we have an intent
+    if oss_intent is not None:
+        try:
+            risk_engine.update_outcome(oss_intent, success)
+        except Exception as e:
+            logger.exception("Failed to update RiskEngine after recording outcome for intent %s: %s", deterministic_id, e)
+    else:
+        logger.error("No valid OSS intent available for risk engine update; skipping outcome for %s", deterministic_id)
 
     return outcome
