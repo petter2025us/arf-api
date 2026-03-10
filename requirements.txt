@@ -8,3 +8,5 @@ alembic
 pydantic-settings
 sqlalchemy
 psycopg2-binary==2.9.10
+slowapi==0.1.9
+prometheus-fastapi-instrumentator==7.1.0
