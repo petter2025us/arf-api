@@ -89,3 +89,29 @@ def test_conflict_different_result(db_session, mock_risk_engine):
 def test_nonexistent_intent(db_session, mock_risk_engine):
     with pytest.raises(ValueError):
         record_outcome(db_session, "missing", True, None, None, mock_risk_engine)
+
+def test_record_outcome_reconstruction_fallback(db_session, mock_risk_engine):
+    # Create an intent with an invalid oss_payload (missing required fields)
+    intent = IntentDB(
+        deterministic_id="intent_bad",
+        intent_type="ProvisionResourceIntent",
+        payload={},
+        oss_payload={"intent_type": "provision_resource"},  # missing required fields
+        created_at=datetime.datetime.utcnow()
+    )
+    db_session.add(intent)
+    db_session.commit()
+    db_session.refresh(intent)
+
+    # This should not raise, and should fall back to dummy intent
+    outcome = record_outcome(
+        db=db_session,
+        deterministic_id="intent_bad",
+        success=True,
+        recorded_by="tester",
+        notes="fallback test",
+        risk_engine=mock_risk_engine
+    )
+    assert outcome.success is True
+    # The engine update should still be called (dummy intent used)
+    mock_risk_engine.update_outcome.assert_called_once()
