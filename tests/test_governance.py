@@ -2,9 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
-client = TestClient(app)
 
-def test_evaluate_provision_intent():
+def test_evaluate_provision_intent(client):
     payload = {
         "intent_type": "provision_resource",
         "environment": "prod",
@@ -22,7 +21,7 @@ def test_evaluate_provision_intent():
     data = response.json()
     assert "risk_score" in data
 
-def test_evaluate_grant_access():
+def test_evaluate_grant_access(client):
     payload = {
         "intent_type": "grant_access",
         "environment": "dev",
@@ -40,7 +39,7 @@ def test_evaluate_grant_access():
     data = response.json()
     assert "risk_score" in data
 
-def test_evaluate_deploy_config():
+def test_evaluate_deploy_config(client):
     payload = {
         "intent_type": "deploy_config",
         "environment": "staging",
@@ -58,7 +57,7 @@ def test_evaluate_deploy_config():
     data = response.json()
     assert "risk_score" in data
 
-def test_invalid_intent_type():
+def test_invalid_intent_type(client):
     payload = {
         "intent_type": "UnknownIntent",
         "environment": "prod",

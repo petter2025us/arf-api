@@ -2,19 +2,12 @@ from agentic_reliability_framework.core.governance.intents import (
     ProvisionResourceIntent,
     GrantAccessIntent,
     DeployConfigurationIntent,
-    ResourceType,
-    PermissionLevel,
-)
-from app.models.infrastructure_intents import (
-    ProvisionResourceRequest,
-    GrantAccessRequest,
-    DeployConfigurationRequest,
 )
 
 def to_oss_intent(api_request):
     if api_request.intent_type == "provision_resource":
         return ProvisionResourceIntent(
-            resource_type=ResourceType(api_request.resource_type),
+            resource_type=api_request.resource_type,
             region=api_request.region,
             size=api_request.size,
             configuration=api_request.configuration,
@@ -25,7 +18,7 @@ def to_oss_intent(api_request):
     elif api_request.intent_type == "grant_access":
         return GrantAccessIntent(
             principal=api_request.principal,
-            permission_level=PermissionLevel(api_request.permission_level),
+            permission_level=api_request.permission_level,
             resource_scope=api_request.resource_scope,
             justification=api_request.justification,
             requester=api_request.requester,
