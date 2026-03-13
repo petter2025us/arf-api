@@ -2,7 +2,7 @@ fastapi==0.115.12
 uvicorn[standard]==0.34.0
 pydantic==2.12.5
 agentic-reliability-framework @ git+https://github.com/petter2025us/agentic-reliability-framework@main
-pytest==9.0.2
+pytest==8.3.5
 httpx==0.28.1
 alembic
 pydantic-settings
